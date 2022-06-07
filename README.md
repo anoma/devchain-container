@@ -6,7 +6,11 @@ Docker container that runs:
 - a single [Anoma](https://github.com/anoma/anoma) validator node against a preconfigured chain with a faucet
 - a HTTP server serving a network release so that the chain can be joined with `anomac utils join-network`
 
-Example usage:
+## Prerequisites
+- Docker
+- Docker BuildKit
+
+## Usage
 
 ```shell
 # building the container may take a while and requires network access
