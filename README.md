@@ -50,6 +50,8 @@ In another shell, while the container is still running:
 ```shell
 export ANOMA_CHAIN_ID='dev.e49eb46d332bd37156fb503c5a'  # your chain ID here
 export ANOMA_NETWORK_CONFIGS_SERVER='http://localhost:8123'
+
+# `anomac` needs to be built off a commit that includes the new genesis validator functionality e.g. commit b4021f085f0f692b07d150dd0929a6f5072cd9a4
 anomac utils join-network \
 	--chain-id $ANOMA_CHAIN_ID
 # there should now be a .anoma subdirectory in your present working directory
