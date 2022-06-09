@@ -26,7 +26,8 @@ export COMMIT='b4021f085f0f692b07d150dd0929a6f5072cd9a4'
 docker build \
     --build-arg BASE_POINT=${BASE_POINT} \
     --build-arg COMMIT=${COMMIT} \
-    -t devchain-container .
+    -t devchain-container:${COMMIT} \
+    -t dev-container .
 
 # after build is done, start up a disposable container
 # 8123 HTTP (used by anomac utils join-network)
