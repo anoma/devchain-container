@@ -16,17 +16,19 @@ Docker container that runs:
 # building the container may take a while and requires network access
 # this default docker build command is fine if you just want to experiment with making transfers, etc.
 
-# BASE_POINT should be an ancestor of COMMIT
-export BASE_POINT='master'
+# REF is the git commit or tag you want to build anoma from
+# it must be at least anoma v0.6.0 or a later commit
+# REF must also be compatible with the `network-config.toml` in this repo (until https://github.com/anoma/anoma/issues/1105 is done, at which point we could use some pre-provided network config template)
+export REF='v0.6.0'
 
-# COMMIT must include the init-genesis-validator changes from https://github.com/anoma/anoma/pull/1053
-# COMMIT must also be compatible with the `network-config.toml` in this repo
-export COMMIT='b4021f085f0f692b07d150dd0929a6f5072cd9a4'
+# BASE_POINT should be an ancestor of REF
+# for caching, ideally it should be using the same Rust toolchain as well
+export BASE_POINT='v0.6.0'
 
 docker build \
     --build-arg BASE_POINT=${BASE_POINT} \
-    --build-arg COMMIT=${COMMIT} \
-    -t devchain-container:${COMMIT} \
+    --build-arg REF=${REF} \
+    -t devchain-container:${REF} \
     -t dev-container .
 
 # after build is done, start up a disposable container
@@ -44,22 +46,20 @@ docker run \
             devchain-container
 ```
 
-Once the container is running, go to http://localhost:8123 to determine what the chain ID is. eg if you see a file like `dev.b1ca22efbf6b78f06defa489e3.tar.gz`, then the chain ID is `dev.b1ca22efbf6b78f06defa489e3`. Chain ID may change on every docker build.
+Once the container is running, go to http://localhost:8123 to determine what the chain ID is. eg if you see a file like `dev.b1ca22efbf6b78f06defa489e3.tar.gz`, then the chain ID is `dev.b1ca22efbf6b78f06defa489e3`. Chain ID will change on every `docker build`, but will be the same for different `docker run`s as long as the same image is being used.
 
 In another shell, while the container is still running:
 
 ```shell
 export ANOMA_CHAIN_ID='dev.e49eb46d332bd37156fb503c5a'  # your chain ID here
 export ANOMA_NETWORK_CONFIGS_SERVER='http://localhost:8123'
-
-# `anomac` needs to be built off a commit that includes the new genesis validator functionality e.g. commit b4021f085f0f692b07d150dd0929a6f5072cd9a4
 anomac utils join-network \
 	--chain-id $ANOMA_CHAIN_ID
 # there should now be a .anoma subdirectory in your present working directory
 
 # briefly run anoman ledger once so that necessary wasms can be downloaded
 # you should see output like "Downloading WASM ..."
-# https://github.com/anoma/anoma/issues/1048
+# until https://github.com/anoma/anoma/issues/1048 is fixed this is needed
 anoman ledger
 
 # after this point, anomac should be able to interact with the chain as normal

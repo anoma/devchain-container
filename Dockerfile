@@ -21,6 +21,7 @@ WORKDIR /usr/local/src/anoma
 
 # base point should be an ancestor of commit
 ARG BASE_POINT
+RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # warm up toolchain and likely dependencies
 RUN /home/builder/.cargo/bin/cargo
@@ -28,8 +29,8 @@ RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
 RUN git reset --hard
 
-ARG COMMIT
-RUN git fetch --depth=1 origin $COMMIT && git checkout $COMMIT
+ARG REF
+RUN git fetch --depth=1 origin $REF && git checkout $REF
 RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
 RUN git reset --hard
@@ -99,6 +100,7 @@ RUN nohup bash -c "python3 -m http.server &" \
 
 # download wasms
 RUN timeout 10s anoman ledger || true
+# ensure Tendermint RPC is exposed from within the container to the outside world
 RUN toml set \
     --toml-path .anoma/$(basename *.tar.gz .tar.gz)/config.toml \
     ledger.tendermint.rpc_address 0.0.0.0:26657
