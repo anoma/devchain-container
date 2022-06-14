@@ -3,14 +3,23 @@
 > :warning: This repo is experimental and shouldn't be relied upon!
 
 Docker container that runs:
+
 - a single [Anoma](https://github.com/anoma/anoma) validator node against a preconfigured chain with a faucet
 - a HTTP server serving a network release so that the chain can be joined with `anomac utils join-network`
 
 ## Prerequisites
+
 - Docker
 - Docker BuildKit
+- Docker Compose
 
-## Usage
+## Building and running the ledger container
+
+### Using Docker Compose (recommended)
+
+Run `docker compose up` to build and run the ledger Docker container. See `docker-compose.yml` for more details if interested. The container will be reused by default, run `docker compose down` to use a fresh container if desired.
+
+### Manually
 
 ```shell
 # building the container may take a while and requires network access
@@ -46,7 +55,9 @@ docker run \
             devchain-container
 ```
 
-Once the container is running, go to http://localhost:8123 to determine what the chain ID is. eg if you see a file like `dev.b1ca22efbf6b78f06defa489e3.tar.gz`, then the chain ID is `dev.b1ca22efbf6b78f06defa489e3`. Chain ID will change on every `docker build`, but will be the same for different `docker run`s as long as the same image is being used.
+## Joining the devchain
+
+Once the container is running, go to <http://localhost:8123> to determine what the chain ID is. eg if you see a file like `dev.b1ca22efbf6b78f06defa489e3.tar.gz`, then the chain ID is `dev.b1ca22efbf6b78f06defa489e3`. Chain ID will change on every `docker build`, but will be the same for different `docker run`s as long as the same image is being used.
 
 In another shell, while the container is still running:
 
@@ -54,14 +65,13 @@ In another shell, while the container is still running:
 export ANOMA_CHAIN_ID='dev.e49eb46d332bd37156fb503c5a'  # your chain ID here
 export ANOMA_NETWORK_CONFIGS_SERVER='http://localhost:8123'
 anomac utils join-network \
-	--chain-id $ANOMA_CHAIN_ID
+ --chain-id $ANOMA_CHAIN_ID
 # there should now be a .anoma subdirectory in your present working directory
 
 # briefly run anoman ledger once so that necessary wasms can be downloaded
 # you should see output like "Downloading WASM ..."
 # until https://github.com/anoma/anoma/issues/1048 is fixed this is needed
 anoman ledger
-
-# after this point, anomac should be able to interact with the chain as normal
-# ie user guide from https://docs.anoma.net/user-guide/ledger.html#-initialize-an-account onwards
 ```
+
+After this point, `anomac` should ideally be able to interact with the chain as if it were a regular testnet. i.e. the user guide from <https://docs.anoma.net/user-guide/ledger.html#-initialize-an-account> onwards should be followable.
