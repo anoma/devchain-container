@@ -7,7 +7,7 @@ RUN apt-get update && \
     git \
     libssl-dev \
     pkg-config && \
-        rm -rf /var/lib/apt/lists/*
+    rm -rf /var/lib/apt/lists/*
 RUN groupadd -g 1000 builder && \
     useradd -r -m -u 1000 -g builder builder
 RUN mkdir /usr/local/src/anoma && chown -R builder:builder /usr/local/src/anoma
@@ -20,7 +20,7 @@ RUN git clone --depth=1 https://github.com/anoma/anoma.git /usr/local/src/anoma
 WORKDIR /usr/local/src/anoma
 
 # base point should be an ancestor of commit
-ARG BASE_POINT
+ARG BASE_POINT=v0.6.0
 RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # warm up toolchain and likely dependencies
@@ -29,7 +29,7 @@ RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
 RUN git reset --hard
 
-ARG REF
+ARG REF=v0.6.0
 RUN git fetch --depth=1 origin $REF && git checkout $REF
 RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
@@ -56,7 +56,7 @@ RUN apt-get update && \
     python3 \
     python3-pip \
     sudo && \
-        apt-get clean
+    apt-get clean
 
 RUN pip3 install toml toml-cli updog
 
@@ -89,7 +89,7 @@ RUN anomac utils init-network \
     --genesis-path $ANOMA_NETWORK_CONFIG_PATH \
     --wasm-checksums-path wasm/checksums.json \
     --unsafe-dont-encrypt && \
-        rm -rf .anoma/$(basename *.tar.gz .tar.gz)
+    rm -rf .anoma/$(basename *.tar.gz .tar.gz)
 
 RUN nohup bash -c "python3 -m http.server &" \
     && sleep 1 \
