@@ -26,12 +26,14 @@ RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # warm up toolchain and likely dependencies
 RUN /home/builder/.cargo/bin/cargo
+RUN /home/builder/.cargo/bin/cargo fetch
 RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
 RUN git reset --hard
 
 ARG REF=v0.6.0
 RUN git fetch --depth=1 origin $REF && git checkout $REF
+RUN /home/builder/.cargo/bin/cargo fetch
 RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
 RUN git reset --hard
