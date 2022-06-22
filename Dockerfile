@@ -58,7 +58,10 @@ RUN apt-get update && \
     sudo && \
     apt-get clean
 
-RUN pip3 install toml toml-cli updog
+RUN pip3 install \
+    toml==0.10.2 \
+    toml-cli==0.3.1 \
+    updog==1.4
 
 COPY --from=builder /usr/local/src/anoma/scripts/install/get_tendermint.sh /usr/local/bin
 RUN get_tendermint.sh
