@@ -15,6 +15,7 @@ RUN mkdir /usr/local/src/anoma && chown -R builder:builder /usr/local/src/anoma
 USER builder
 ENV RUSTUP_TOOLCHAIN="nightly-2022-06-24"
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
+ENV CARGO_UNSTABLE_SPARSE_REGISTRY="true"
 RUN /home/builder/.cargo/bin/cargo install cargo-chef --locked
 
 RUN git clone --depth=1 https://github.com/anoma/anoma.git /usr/local/src/anoma
