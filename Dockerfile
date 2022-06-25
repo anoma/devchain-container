@@ -13,7 +13,7 @@ RUN groupadd -g 1000 builder && \
 RUN mkdir /usr/local/src/anoma && chown -R builder:builder /usr/local/src/anoma
 
 USER builder
-ENV RUSTUP_TOOLCHAIN="nightly-2022-06-14"
+ENV RUSTUP_TOOLCHAIN="nightly-2022-06-24"
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
 RUN /home/builder/.cargo/bin/cargo install cargo-chef --locked
 
