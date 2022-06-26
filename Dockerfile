@@ -21,12 +21,13 @@ RUN /home/builder/.cargo/bin/cargo install cargo-chef --locked
 RUN git clone --depth=1 https://github.com/anoma/anoma.git /usr/local/src/anoma
 WORKDIR /usr/local/src/anoma
 
-# base point should be an ancestor of commit
+# BASE_POINT should be an ancestor of REF that shares the same toolchain
 ARG BASE_POINT=v0.6.0
 RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # warm up toolchain and likely dependencies
-RUN /home/builder/.cargo/bin/cargo
+# actual toolchain specified in repo is needed for running rustfmt in build.rs
+RUN /home/builder/.cargo/bin/rustup toolchain install $(cat rust-nightly-version)
 RUN /home/builder/.cargo/bin/cargo fetch
 RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
