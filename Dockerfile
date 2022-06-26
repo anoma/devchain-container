@@ -40,6 +40,7 @@ RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
 RUN git reset --hard
 
+ENV RUSTFLAGS="-C strip=symbols"
 RUN /home/builder/.cargo/bin/cargo build \
     --package anoma_apps \
     --bin anoma
