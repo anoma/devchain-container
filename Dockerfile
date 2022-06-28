@@ -1,4 +1,4 @@
-FROM ubuntu:22.04 AS builder
+FROM ubuntu:jammy-20220531 AS builder
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
@@ -54,7 +54,7 @@ RUN /home/builder/.cargo/bin/cargo build \
     --package anoma_apps \
     --bin anoman
 
-FROM ubuntu:22.04
+FROM ubuntu:jammy-20220531
 RUN apt-get update && \
     apt-get install -y \
     ca-certificates \
