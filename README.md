@@ -28,10 +28,10 @@ Run `docker compose up` to build and run the ledger Docker container. See `docke
 # REF is the git commit or tag you want to build anoma from
 # it must be at least anoma v0.6.0 or a later commit
 # REF must also be compatible with the `network-config.toml` in this repo (until https://github.com/anoma/anoma/issues/1105 is done, at which point we could use some pre-provided network config template)
-export REF='v0.6.0'
+export REF='v0.6.1'
 
-export BASE_POINT='v0.6.0'
 # BASE_POINT is built before REF, it should preferably share code and crate dependencies with REF, to help with caching
+export BASE_POINT='v0.6.1'
 
 docker build \
     --build-arg BASE_POINT=${BASE_POINT} \

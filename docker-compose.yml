@@ -4,8 +4,8 @@ services:
     build:
       context: .
       args:
-        - REF=v0.6.0
-        - BASE_POINT=v0.6.0
+        - REF=v0.6.1
+        - BASE_POINT=v0.6.1
     ports:
       - '127.0.0.1:8123:8123'
       - '127.0.0.1:26656:26656'

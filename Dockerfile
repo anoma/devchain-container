@@ -22,7 +22,7 @@ RUN git clone --depth=1 https://github.com/anoma/anoma.git /usr/local/src/anoma
 WORKDIR /usr/local/src/anoma
 
 # BASE_POINT should be an ancestor of REF that shares the same toolchain
-ARG BASE_POINT=v0.6.0
+ARG BASE_POINT=v0.6.1
 RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # warm up toolchain and likely dependencies
@@ -33,7 +33,7 @@ RUN /home/builder/.cargo/bin/cargo chef prepare
 RUN /home/builder/.cargo/bin/cargo chef cook
 RUN git reset --hard
 
-ARG REF=v0.6.0
+ARG REF=v0.6.1
 RUN git fetch --depth=1 origin $REF && git checkout $REF
 RUN /home/builder/.cargo/bin/cargo fetch
 RUN /home/builder/.cargo/bin/cargo chef prepare
