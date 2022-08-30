@@ -4,8 +4,8 @@
 
 Docker container that runs:
 
-- a single [Anoma](https://github.com/anoma/anoma) validator node against a preconfigured chain with a faucet
-- a HTTP server serving a network release so that the chain can be joined with `anomac utils join-network`
+- a single [Namada](https://github.com/anoma/namada) validator node for a preconfigured chain with a faucet
+- a HTTP server serving a network release so that a chain configuration can be downloaded
 
 ## Prerequisites
 
@@ -13,7 +13,7 @@ Docker container that runs:
 - Docker BuildKit
 - Docker Compose
 
-## Building and running the ledger container
+## Running the ledger via Docker
 
 ### Using Docker Compose (recommended)
 
@@ -54,23 +54,8 @@ docker run \
             devchain-container
 ```
 
-## Joining the devchain
+## Running the ledger natively
 
-Once the container is running, go to <http://localhost:8123> to determine what the chain ID is. eg if you see a file like `dev.b1ca22efbf6b78f06defa489e3.tar.gz`, then the chain ID is `dev.b1ca22efbf6b78f06defa489e3`. Chain ID will change on every `docker build`, but will be the same for different `docker run`s as long as the same image is being used.
+Start the Docker container as above, then go to <http://localhost:8123> and look for a file like e.g. `anoma-dev.b1ca22efbf6b78f06defa489e3.tar.gz`. Download and extract this archive, there should be a `.anoma` directory inside it. The Docker container can now be stopped.
 
-In another shell, while the container is still running:
-
-```shell
-export ANOMA_CHAIN_ID='dev.e49eb46d332bd37156fb503c5a'  # your chain ID here
-export ANOMA_NETWORK_CONFIGS_SERVER='http://localhost:8123'
-anomac utils join-network \
- --chain-id $ANOMA_CHAIN_ID
-# there should now be a .anoma subdirectory in your present working directory
-
-# briefly run anoman ledger once so that necessary wasms can be downloaded
-# you should see output like "Downloading WASM ..."
-# until https://github.com/anoma/anoma/issues/1048 is fixed this is needed
-anoman ledger
-```
-
-After this point, `anomac` should ideally be able to interact with the chain as if it were a regular testnet. i.e. the user guide from <https://docs.anoma.net/user-guide/ledger.html#-initialize-an-account> onwards should be followable.
+It should be possible to run `namada` commands from inside whatever directory contains this `.anoma` directory, and the `namada` commands will be configured to use this preconfigured chain. e.g. `namadan ledger run` could start up a validator node for this chain.
