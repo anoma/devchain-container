@@ -10,11 +10,12 @@ RUN apt-get update && \
     rm -rf /var/lib/apt/lists/*
 RUN groupadd -g 1000 builder && \
     useradd -r -m -u 1000 -g builder builder
-RUN mkdir /usr/local/src/anoma && chown -R builder:builder /usr/local/src/anoma
+RUN mkdir /usr/local/src/namada && chown -R builder:builder /usr/local/src/namada
 
 USER builder
 
 # recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
+ENV RUSTFLAGS="-C strip=symbols"
 ARG RUSTUP_TOOLCHAIN="nightly-2022-06-24"
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
 ENV PATH="/home/builder/.cargo/bin:${PATH}"
@@ -22,69 +23,66 @@ ENV PATH="/home/builder/.cargo/bin:${PATH}"
 ARG CARGO_UNSTABLE_SPARSE_REGISTRY="true"
 RUN cargo install cargo-chef --locked
 
-RUN git clone --depth=1 https://github.com/anoma/anoma.git /usr/local/src/anoma
-WORKDIR /usr/local/src/anoma
+RUN git clone --depth=1 https://github.com/anoma/namada.git /usr/local/src/namada
+WORKDIR /usr/local/src/namada
 
 # BASE_POINT should be an ancestor of REF that shares the same toolchain
-ARG BASE_POINT=v0.6.1
+ARG BASE_POINT=v0.7.1
 RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # actual nightly toolchain specified in repo is needed for running rustfmt in build.rs
 # can be removed once https://github.com/anoma/namada/issues/40 is done
-RUN rustup toolchain install $(cat rust-nightly-version)
+RUN rustup toolchain install "$(cat rust-nightly-version)"
 
 RUN cargo fetch
 RUN cargo chef prepare
+ARG ANOMA_BASE_FFLAGS="default"
 RUN cargo chef cook \
     --no-default-features \
-    --features "ABCI-plus-plus"
+    --features "$ANOMA_BASE_FFLAGS"
 RUN git reset --hard
 
 FROM base AS ref
-ARG REF=v0.6.1
+ARG REF=v0.7.1
 RUN git fetch --depth=1 origin $REF && git checkout $REF
 # actual nightly toolchain specified in repo is needed for running rustfmt in build.rs
 # can be removed once https://github.com/anoma/namada/issues/40 is done
-RUN rustup toolchain install $(cat rust-nightly-version)
+RUN rustup toolchain install "$(cat rust-nightly-version)"
 
 FROM ref as builder
 RUN cargo fetch
 RUN cargo chef prepare
+ARG ANOMA_REF_FFLAGS="default"
 RUN cargo chef cook \
     --no-default-features \
-    --features "ABCI-plus-plus"
+    --features "$ANOMA_REF_FFLAGS"
 RUN git reset --hard
-ENV RUSTFLAGS="-C strip=symbols"
 RUN cargo build \
     --no-default-features \
-    --features "ABCI-plus-plus ibc-vp" \
-    --package anoma
+    --features "$ANOMA_REF_FFLAGS" \
+    --package namada_apps \
+    --bin namada
 RUN cargo build \
     --no-default-features \
-    --features "ABCI-plus-plus" \
-    --package anoma_apps \
-    --bin anoma
+    --features "$ANOMA_REF_FFLAGS" \
+    --package namada_apps \
+    --bin namadaw
 RUN cargo build \
     --no-default-features \
-    --features "ABCI-plus-plus" \
-    --package anoma_apps \
-    --bin anomaw
+    --features "$ANOMA_REF_FFLAGS" \
+    --package namada_apps \
+    --bin namadac
 RUN cargo build \
     --no-default-features \
-    --features "ABCI-plus-plus" \
-    --package anoma_apps \
-    --bin anomac
-RUN cargo build \
-    --no-default-features \
-    --features "ABCI-plus-plus" \
-    --package anoma_apps \
-    --bin anoman
+    --features "$ANOMA_REF_FFLAGS" \
+    --package namada_apps \
+    --bin namadan
 
 FROM ref AS tendermint-downloader
 # TODO: fetch Tendermint according to version specified in repo, once https://github.com/anoma/namada/issues/153 is done
 # TODO: make arm64 compatible as well
-ARG TENDERMINT_URL='https://github.com/james-chf/github-builder/releases/download/tendermint-29e5fbcc648510e4763bd0af0b461aed92c21f30-linux-amd64/tendermint-linux-amd64'
-RUN curl -L $TENDERMINT_URL > /tmp/tendermint++
+ARG TENDERMINT_URL='https://github.com/heliaxdev/tendermint/releases/download/v0.1.1-abcipp/tendermint_0.1.1-abcipp_linux_amd64.tar.gz'
+RUN curl -L $TENDERMINT_URL > /tmp/tendermint.tar.gz && cd /tmp && tar -xzvf tendermint.tar.gz
 
 FROM ref AS wasm-builder
 RUN rustup target add wasm32-unknown-unknown
@@ -101,24 +99,30 @@ RUN apt-get update && \
     sudo && \
     apt-get clean
 
-RUN pip3 install \
+RUN pip3 install --no-cache-dir \
     toml==0.10.2 \
     toml-cli==0.3.1 \
     updog==1.4
 
-COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint++ /usr/local/bin
-ENV TENDERMINT="tendermint++"
-COPY --from=builder /usr/local/src/anoma/target/debug/anoma /usr/local/bin
-COPY --from=builder /usr/local/src/anoma/target/debug/anomaw /usr/local/bin
-COPY --from=builder /usr/local/src/anoma/target/debug/anomac /usr/local/bin
-COPY --from=builder /usr/local/src/anoma/target/debug/anoman /usr/local/bin
+# pre-emptively downloading geth as it is needed by Ethereum bridge branches
+RUN curl -L https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.10.20-8f2416a8.tar.gz --output /tmp/geth.tgz && \
+    tar -xzvf /tmp/geth.tgz -C /tmp && \
+    cp /tmp/geth-linux-amd64-1.10.20-8f2416a8/geth /usr/local/bin/ && \
+    chmod a+x /usr/local/bin/geth && \
+    rm /tmp/geth.tgz
+
+COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint /usr/local/bin
+COPY --from=builder /usr/local/src/namada/target/debug/namada /usr/local/bin
+COPY --from=builder /usr/local/src/namada/target/debug/namadaw /usr/local/bin
+COPY --from=builder /usr/local/src/namada/target/debug/namadac /usr/local/bin
+COPY --from=builder /usr/local/src/namada/target/debug/namadan /usr/local/bin
 
 WORKDIR /srv
-COPY --from=wasm-builder /usr/local/src/anoma/wasm/checksums.json wasm/checksums.json
-COPY --from=wasm-builder /usr/local/src/anoma/wasm/*.wasm wasm/
+COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.json wasm/checksums.json
+COPY --from=wasm-builder /usr/local/src/namada/wasm/*.wasm wasm/
 
 ENV ALIAS="validator-dev"
-RUN anomac utils init-genesis-validator \
+RUN namadac utils init-genesis-validator \
     --alias $ALIAS \
     --net-address 127.0.0.1:26656 \
     --unsafe-dont-encrypt
@@ -126,32 +130,10 @@ RUN anomac utils init-genesis-validator \
 COPY --chmod=0755 add_validator_shard.py /usr/local/bin
 
 COPY network-config.toml .
-ARG ANOMA_NETWORK_CONFIG_PATH="network-config-processed.toml"
+ENV ANOMA_NETWORK_CONFIG_PATH="network-config-processed.toml"
 RUN add_validator_shard.py .anoma/pre-genesis/$ALIAS/validator.toml network-config.toml > $ANOMA_NETWORK_CONFIG_PATH
 
-ARG ANOMA_CHAIN_PREFIX="dev"
-RUN anomac utils init-network \
-    --chain-prefix $ANOMA_CHAIN_PREFIX \
-    --genesis-path $ANOMA_NETWORK_CONFIG_PATH \
-    --wasm-checksums-path wasm/checksums.json \
-    --unsafe-dont-encrypt && \
-    rm -rf .anoma/$(basename *.tar.gz .tar.gz)
-
-# TODO: it should eventually be possible to join a network using a local .tar.gz rather than via a download
-RUN nohup bash -c "python3 -m http.server &" \
-    && sleep 1 \
-    && ANOMA_NETWORK_CONFIGS_SERVER='http://localhost:8000' anomac \
-    utils join-network \
-    --genesis-validator $ALIAS \
-    --chain-id $(basename *.tar.gz .tar.gz)
-
-RUN cp wasm/*.wasm .anoma/$(basename *.tar.gz .tar.gz)/wasm/
-
-# ensure Tendermint RPC is exposed from within the container to the outside world
-RUN toml set \
-    --toml-path .anoma/$(basename *.tar.gz .tar.gz)/config.toml \
-    ledger.tendermint.rpc_address 0.0.0.0:26657
-
+ENV ANOMA_CHAIN_PREFIX="dev"
 ENV TM_LOG_LEVEL=warn
 ENV ANOMA_LOG=debug
 EXPOSE 8123 26656 26657
