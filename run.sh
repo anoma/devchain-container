@@ -27,7 +27,7 @@ toml set \
     ledger.tendermint.rpc_address 0.0.0.0:26657
 
 # package up and serve the built .anoma directory for users who want to run a ledger outside of the container
-tar -cvzf "anoma-$(cat chain-id).tar.gz" .anoma
+tar -cvzf "prebuilt.tar.gz" .anoma
 
 updog -p 8123 &
 
