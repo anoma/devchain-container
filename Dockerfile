@@ -137,5 +137,6 @@ ENV ANOMA_CHAIN_PREFIX="dev"
 ENV TM_LOG_LEVEL=warn
 ENV ANOMA_LOG=debug
 EXPOSE 8123 26656 26657
+COPY init_chain.sh .
 COPY run.sh .
 CMD ["./run.sh"]
