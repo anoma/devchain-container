@@ -10,6 +10,8 @@ namadac utils init-network \
     --unsafe-dont-encrypt &&
     rm -rf .anoma/"$(basename *.tar.gz .tar.gz)"
 
+basename *.tar.gz .tar.gz >chain-id
+
 # TODO: it should eventually be possible to join a network using a local .tar.gz rather than via a download
 nohup bash -c "python3 -m http.server &" &&
     sleep 1 &&
