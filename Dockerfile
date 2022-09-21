@@ -118,7 +118,7 @@ COPY --from=builder /usr/local/src/namada/target/debug/namadac /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namadan /usr/local/bin
 
 WORKDIR /srv
-COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.json wasm/checksums.json
+COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.py wasm/checksums.py
 COPY --from=wasm-builder /usr/local/src/namada/wasm/*.wasm wasm/
 
 ENV ALIAS="validator-dev"

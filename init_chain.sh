@@ -2,6 +2,7 @@
 set -eoux pipefail
 IFS=$'\n\t'
 
+python3 wasm/checksums.py
 # TODO: only try to initialize network on first run
 namadac utils init-network \
     --chain-prefix "$ANOMA_CHAIN_PREFIX" \
