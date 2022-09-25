@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20220531 AS base
+FROM ubuntu:jammy-20220815 AS base
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
