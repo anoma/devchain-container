@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20220531 AS base
+FROM ubuntu:jammy-20220815 AS base
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
@@ -14,13 +14,14 @@ RUN mkdir /usr/local/src/namada && chown -R builder:builder /usr/local/src/namad
 
 USER builder
 
-# recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
 ENV RUSTFLAGS="-C strip=symbols"
-ARG RUSTUP_TOOLCHAIN="nightly-2022-06-24"
+
+# recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
+ARG RUSTUP_TOOLCHAIN="nightly-2022-09-25"
+ARG CARGO_UNSTABLE_SPARSE_REGISTRY="true"
+
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
 ENV PATH="/home/builder/.cargo/bin:${PATH}"
-
-ARG CARGO_UNSTABLE_SPARSE_REGISTRY="true"
 RUN cargo install cargo-chef --locked
 
 RUN git clone --depth=1 https://github.com/anoma/namada.git /usr/local/src/namada
@@ -118,7 +119,7 @@ COPY --from=builder /usr/local/src/namada/target/debug/namadac /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namadan /usr/local/bin
 
 WORKDIR /srv
-COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.json wasm/checksums.json
+COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.py wasm/checksums.py
 COPY --from=wasm-builder /usr/local/src/namada/wasm/*.wasm wasm/
 
 ENV ALIAS="validator-dev"
@@ -137,5 +138,6 @@ ENV ANOMA_CHAIN_PREFIX="dev"
 ENV TM_LOG_LEVEL=warn
 ENV ANOMA_LOG=debug
 EXPOSE 8123 26656 26657
+COPY init_chain.sh .
 COPY run.sh .
 CMD ["./run.sh"]
