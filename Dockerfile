@@ -14,13 +14,14 @@ RUN mkdir /usr/local/src/namada && chown -R builder:builder /usr/local/src/namad
 
 USER builder
 
-# recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
 ENV RUSTFLAGS="-C strip=symbols"
-ARG RUSTUP_TOOLCHAIN="nightly-2022-06-24"
+
+# recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
+ARG RUSTUP_TOOLCHAIN="nightly-2022-09-25"
+ARG CARGO_UNSTABLE_SPARSE_REGISTRY="true"
+
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
 ENV PATH="/home/builder/.cargo/bin:${PATH}"
-
-ARG CARGO_UNSTABLE_SPARSE_REGISTRY="true"
 RUN cargo install cargo-chef --locked
 
 RUN git clone --depth=1 https://github.com/anoma/namada.git /usr/local/src/namada
