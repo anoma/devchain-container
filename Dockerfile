@@ -20,7 +20,8 @@ ENV RUSTFLAGS="-C strip=symbols"
 
 # recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
 ARG RUSTUP_TOOLCHAIN="nightly-2022-09-25"
-ARG CARGO_UNSTABLE_SPARSE_REGISTRY="true"
+ENV RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN}
+ENV CARGO_UNSTABLE_SPARSE_REGISTRY="true"
 
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
 ENV PATH="/home/builder/.cargo/bin:${PATH}"
