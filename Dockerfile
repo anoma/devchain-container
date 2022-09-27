@@ -138,8 +138,8 @@ ENV ANOMA_NETWORK_CONFIG_PATH="network-config-processed.toml"
 RUN add_validator_shard.py .anoma/pre-genesis/$ALIAS/validator.toml network-config.toml > $ANOMA_NETWORK_CONFIG_PATH
 
 ENV ANOMA_CHAIN_PREFIX="dev"
-ENV TM_LOG_LEVEL=warn
-ENV ANOMA_LOG=debug
+ENV TM_LOG_LEVEL=info
+ENV ANOMA_LOG=info
 EXPOSE 8123 26656 26657
 COPY init_chain.sh .
 COPY run.sh .
