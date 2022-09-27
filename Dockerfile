@@ -96,7 +96,6 @@ RUN download_tendermint.sh
 FROM ref AS wasm-builder
 RUN rustup target add wasm32-unknown-unknown
 RUN make -C wasm/wasm_source
-RUN make checksum-wasm
 
 FROM ubuntu
 RUN apt-get update && \
