@@ -1,5 +1,6 @@
 *
 !run.sh
 !init_chain.sh
+!download_tendermint.sh
 !network-config.toml
 !add_validator_shard.py

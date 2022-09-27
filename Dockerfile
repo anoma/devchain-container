@@ -1,6 +1,11 @@
 FROM ubuntu:jammy-20220815 AS ubuntu
 
 FROM ubuntu AS base
+
+# https://github.com/docker/buildx/issues/510#issuecomment-763663610
+ARG TARGETPLATFORM
+ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
+
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
@@ -83,10 +88,10 @@ RUN cargo build \
     --bin namadan
 
 FROM ref AS tendermint-downloader
-# TODO: fetch Tendermint according to version specified in repo, once https://github.com/anoma/namada/issues/153 is done
-# TODO: make arm64 compatible as well
-ARG TENDERMINT_URL='https://github.com/heliaxdev/tendermint/releases/download/v0.1.1-abcipp/tendermint_0.1.1-abcipp_linux_amd64.tar.gz'
-RUN curl -L $TENDERMINT_URL > /tmp/tendermint.tar.gz && cd /tmp && tar -xzvf tendermint.tar.gz
+ARG TENDERMINT_ARM64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.1-abcipp/tendermint_0.1.1-abcipp_linux_arm64.tar.gz"
+ARG TENDERMINT_AMD64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.1-abcipp/tendermint_0.1.1-abcipp_linux_amd64.tar.gz"
+COPY --chmod=0755 download_tendermint.sh /usr/local/bin
+RUN download_tendermint.sh
 
 FROM ref AS wasm-builder
 RUN rustup target add wasm32-unknown-unknown
