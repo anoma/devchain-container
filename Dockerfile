@@ -112,12 +112,8 @@ RUN pip3 install --no-cache-dir \
     toml-cli==0.3.1 \
     updog==1.4
 
-# pre-emptively downloading geth as it is needed by Ethereum bridge branches
-RUN curl -L https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.10.20-8f2416a8.tar.gz --output /tmp/geth.tgz && \
-    tar -xzvf /tmp/geth.tgz -C /tmp && \
-    cp /tmp/geth-linux-amd64-1.10.20-8f2416a8/geth /usr/local/bin/ && \
-    chmod a+x /usr/local/bin/geth && \
-    rm /tmp/geth.tgz
+# disable validator Ethereum bridge functionality by default
+ENV ANOMA_LEDGER__ETHEREUM__MODE='Off'
 
 COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namada /usr/local/bin
