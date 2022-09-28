@@ -1,4 +1,11 @@
-FROM ubuntu:jammy-20220531 AS base
+FROM ubuntu:jammy-20220815 AS ubuntu
+
+FROM ubuntu AS base
+
+# https://github.com/docker/buildx/issues/510#issuecomment-763663610
+ARG TARGETPLATFORM
+ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
+
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
@@ -14,13 +21,15 @@ RUN mkdir /usr/local/src/namada && chown -R builder:builder /usr/local/src/namad
 
 USER builder
 
-# recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
 ENV RUSTFLAGS="-C strip=symbols"
-ARG RUSTUP_TOOLCHAIN="nightly-2022-06-24"
+
+# recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
+ARG RUSTUP_TOOLCHAIN="nightly-2022-09-25"
+ENV RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN}
+ENV CARGO_UNSTABLE_SPARSE_REGISTRY="true"
+
 RUN curl https://sh.rustup.rs -sSf | sh -s -- -y --default-toolchain $RUSTUP_TOOLCHAIN
 ENV PATH="/home/builder/.cargo/bin:${PATH}"
-
-ARG CARGO_UNSTABLE_SPARSE_REGISTRY="true"
 RUN cargo install cargo-chef --locked
 
 RUN git clone --depth=1 https://github.com/anoma/namada.git /usr/local/src/namada
@@ -79,17 +88,16 @@ RUN cargo build \
     --bin namadan
 
 FROM ref AS tendermint-downloader
-# TODO: fetch Tendermint according to version specified in repo, once https://github.com/anoma/namada/issues/153 is done
-# TODO: make arm64 compatible as well
-ARG TENDERMINT_URL='https://github.com/heliaxdev/tendermint/releases/download/v0.1.1-abcipp/tendermint_0.1.1-abcipp_linux_amd64.tar.gz'
-RUN curl -L $TENDERMINT_URL > /tmp/tendermint.tar.gz && cd /tmp && tar -xzvf tendermint.tar.gz
+ARG TENDERMINT_ARM64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.1-abcipp/tendermint_0.1.1-abcipp_linux_arm64.tar.gz"
+ARG TENDERMINT_AMD64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.1-abcipp/tendermint_0.1.1-abcipp_linux_amd64.tar.gz"
+COPY --chmod=0755 download_tendermint.sh /usr/local/bin
+RUN download_tendermint.sh
 
 FROM ref AS wasm-builder
 RUN rustup target add wasm32-unknown-unknown
 RUN make -C wasm/wasm_source
-RUN make checksum-wasm
 
-FROM ubuntu:jammy-20220531
+FROM ubuntu
 RUN apt-get update && \
     apt-get install -y \
     ca-certificates \
@@ -104,12 +112,8 @@ RUN pip3 install --no-cache-dir \
     toml-cli==0.3.1 \
     updog==1.4
 
-# pre-emptively downloading geth as it is needed by Ethereum bridge branches
-RUN curl -L https://gethstore.blob.core.windows.net/builds/geth-linux-amd64-1.10.20-8f2416a8.tar.gz --output /tmp/geth.tgz && \
-    tar -xzvf /tmp/geth.tgz -C /tmp && \
-    cp /tmp/geth-linux-amd64-1.10.20-8f2416a8/geth /usr/local/bin/ && \
-    chmod a+x /usr/local/bin/geth && \
-    rm /tmp/geth.tgz
+# disable validator Ethereum bridge functionality by default
+ENV ANOMA_LEDGER__ETHEREUM__MODE='Off'
 
 COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namada /usr/local/bin
@@ -118,7 +122,7 @@ COPY --from=builder /usr/local/src/namada/target/debug/namadac /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namadan /usr/local/bin
 
 WORKDIR /srv
-COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.json wasm/checksums.json
+COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.py wasm/checksums.py
 COPY --from=wasm-builder /usr/local/src/namada/wasm/*.wasm wasm/
 
 ENV ALIAS="validator-dev"
@@ -134,8 +138,9 @@ ENV ANOMA_NETWORK_CONFIG_PATH="network-config-processed.toml"
 RUN add_validator_shard.py .anoma/pre-genesis/$ALIAS/validator.toml network-config.toml > $ANOMA_NETWORK_CONFIG_PATH
 
 ENV ANOMA_CHAIN_PREFIX="dev"
-ENV TM_LOG_LEVEL=warn
-ENV ANOMA_LOG=debug
+ENV TM_LOG_LEVEL=info
+ENV ANOMA_LOG=info
 EXPOSE 8123 26656 26657
+COPY init_chain.sh .
 COPY run.sh .
 CMD ["./run.sh"]
