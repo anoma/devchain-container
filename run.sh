@@ -16,7 +16,8 @@ nohup bash -c "python3 -m http.server &" &&
     ANOMA_NETWORK_CONFIGS_SERVER='http://localhost:8000' namadac \
         utils join-network \
         --genesis-validator "$ALIAS" \
-        --chain-id "$(cat chain-id)"
+        --chain-id "$(cat chain-id)" \
+        --dont-prefetch-wasm
 
 cp wasm/*.wasm ".anoma/$(cat chain-id)/wasm/"
 cp wasm/checksums.json ".anoma/$(cat chain-id)/wasm/"
