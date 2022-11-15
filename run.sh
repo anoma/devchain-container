@@ -16,7 +16,8 @@ nohup bash -c "python3 -m http.server &" &&
     ANOMA_NETWORK_CONFIGS_SERVER='http://localhost:8000' namadac \
         utils join-network \
         --genesis-validator "$ALIAS" \
-        --chain-id "$(cat chain-id)"
+        --chain-id "$(cat chain-id)" \
+        --dont-prefetch-wasm
 
 cp wasm/*.wasm ".anoma/$(cat chain-id)/wasm/"
 cp wasm/checksums.json ".anoma/$(cat chain-id)/wasm/"
@@ -29,10 +30,13 @@ toml set \
 # package up and serve the built .anoma directory for users who want to run a ledger outside of the container
 tar -cvzf "prebuilt.tar.gz" .anoma
 
+declare -a PIDS=()
+
 updog -p 8123 &
+PIDS[0]=$!
 
 namadan ledger &
+PIDS[1]=$!
 
-wait -n
-
-exit $?
+trap 'kill ${PIDS[0]} ${PIDS[1]}; exit 0' INT
+wait
