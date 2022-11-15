@@ -30,10 +30,13 @@ toml set \
 # package up and serve the built .anoma directory for users who want to run a ledger outside of the container
 tar -cvzf "prebuilt.tar.gz" .anoma
 
+declare -a PIDS=()
+
 updog -p 8123 &
+PIDS[0]=$!
 
 namadan ledger &
+PIDS[1]=$!
 
-wait -n
-
-exit $?
+trap 'kill ${PIDS[0]} ${PIDS[1]}; exit 0' INT
+wait
