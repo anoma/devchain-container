@@ -25,13 +25,13 @@ Run `docker compose up` to build and run the ledger Docker container. See `docke
 # building the container may take a while and requires network access
 # this default docker build command is fine if you just want to experiment with making transfers, etc.
 
-# REF is the git commit or tag you want to build anoma from
-# it must be at least anoma v0.7.1 or a later commit
+# REF is the git commit or tag you want to build namada from
+# it must be at least this version or a later commit
 # REF must also be compatible with the `network-config.toml` in this repo (until https://github.com/anoma/anoma/issues/1105 is done, at which point we could use some pre-provided network config template)
-export REF='v0.7.1'
+export REF='v0.9.0'
 
 # BASE_POINT is built before REF, it should preferably share code and crate dependencies with REF, to help with caching
-export BASE_POINT='v0.7.1'
+export BASE_POINT='v0.9.0'
 
 docker build \
     --build-arg BASE_POINT=${BASE_POINT} \
@@ -40,9 +40,9 @@ docker build \
     -t dev-container .
 
 # after build is done, start up a disposable container
-# 8123 HTTP (used by anomac utils join-network)
+# 8123 HTTP (used by namadac utils join-network)
 # 26656 Tendermint P2P (not strictly necessary to expose)
-# 26657 Tendermint RPC (used by anomac)
+# 26657 Tendermint RPC (used by namadac)
 # -it - so the container can be killed by Ctrl+Cs
 # --rm - makes the container disposable - don't use this --rm argument if you want to reuse a container and its chain!
 docker run \
