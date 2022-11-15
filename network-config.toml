@@ -1,10 +1,10 @@
 # the genesis_time can be any time in the past - since we will want to start this chain immediately
 genesis_time = "2022-01-01T00:00:00.00Z"
 
-[token.XAN]
+[token.nam]
 address = "atest1v4ehgw36x3prswzxggunzv6pxqmnvdj9xvcyzvpsggeyvs3cg9qnywf589qnwvfsg5erg3fkl09rg5"
 vp = "vp_token"
-[token.XAN.balances]
+[token.nam.balances]
 atest1v4ehgw36gc6yxvpjxccyzvphxycrxw2xxsuyydesxgcnjs3cg9znwv3cxgmnj32yxy6rssf5tcqjm3 = 9223372036854
 [established.faucet]
 address = "atest1v4ehgw36gc6yxvpjxccyzvphxycrxw2xxsuyydesxgcnjs3cg9znwv3cxgmnj32yxy6rssf5tcqjm3"
@@ -54,7 +54,7 @@ duplicate_vote_slash_rate = 500
 light_client_attack_slash_rate = 500
 # Governance parameters.
 [gov_params]
-# minimum amount of xan token to lock
+# minimum amount of native token to lock
 min_proposal_fund = 500
 # proposal code size in bytes
 max_proposal_code_size = 300000
