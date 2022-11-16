@@ -113,7 +113,7 @@ RUN pip3 install --no-cache-dir \
     updog==1.4
 
 # disable validator Ethereum bridge functionality by default
-ENV ANOMA_LEDGER__ETHEREUM__MODE='Off'
+ENV ANOMA_LEDGER__ETHEREUM_BRIDGE__MODE='Off'
 
 COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namada /usr/local/bin
