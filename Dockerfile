@@ -114,6 +114,8 @@ RUN pip3 install --no-cache-dir \
 
 # disable validator Ethereum bridge functionality by default
 ENV ANOMA_LEDGER__ETHEREUM_BRIDGE__MODE='Off'
+# ensure Tendermint RPC is exposed from within the container to the outside world
+ENV ANOMA_LEDGER__TENDERMINT__RPC_ADDRESS='0.0.0.0:26657'
 
 COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namada /usr/local/bin
