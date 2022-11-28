@@ -127,6 +127,13 @@ WORKDIR /srv
 COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.py wasm/checksums.py
 COPY --from=wasm-builder /usr/local/src/namada/wasm/*.wasm wasm/
 
+# download MASP params
+RUN mkdir masp && \
+    curl -o masp/masp-spend.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-spend.params?raw=true && \
+    curl -o masp/masp-output.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-output.params?raw=true && \
+    curl -o masp/masp-convert.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-convert.params?raw=true
+ENV ANOMA_MASP_PARAMS_DIR='/srv/masp'
+
 ENV ALIAS="validator-dev"
 RUN namadac utils init-genesis-validator \
     --alias $ALIAS \
