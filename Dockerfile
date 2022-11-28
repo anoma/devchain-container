@@ -36,7 +36,7 @@ RUN git clone --depth=1 https://github.com/anoma/namada.git /usr/local/src/namad
 WORKDIR /usr/local/src/namada
 
 # BASE_POINT should be an ancestor of REF that shares the same toolchain
-ARG BASE_POINT=v0.9.0
+ARG BASE_POINT=v0.10.1
 RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # actual nightly toolchain specified in repo is needed for running rustfmt in build.rs
@@ -52,7 +52,7 @@ RUN cargo chef cook \
 RUN git reset --hard
 
 FROM base AS ref
-ARG REF=v0.9.0
+ARG REF=v0.10.1
 RUN git fetch --depth=1 origin $REF && git checkout $REF
 # actual nightly toolchain specified in repo is needed for running rustfmt in build.rs
 # can be removed once https://github.com/anoma/namada/issues/40 is done
@@ -88,8 +88,8 @@ RUN cargo build \
     --bin namadan
 
 FROM ref AS tendermint-downloader
-ARG TENDERMINT_ARM64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.2-abciplus/tendermint_0.1.2-abciplus_linux_arm64.tar.gz"
-ARG TENDERMINT_AMD64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.2-abciplus/tendermint_0.1.2-abciplus_linux_amd64.tar.gz"
+ARG TENDERMINT_ARM64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.4-abciplus/tendermint_0.1.4-abciplus_linux_arm64.tar.gz"
+ARG TENDERMINT_AMD64_URL="https://github.com/heliaxdev/tendermint/releases/download/v0.1.4-abciplus/tendermint_0.1.4-abciplus_linux_amd64.tar.gz"
 COPY --chmod=0755 download_tendermint.sh /usr/local/bin
 RUN download_tendermint.sh
 
@@ -113,7 +113,9 @@ RUN pip3 install --no-cache-dir \
     updog==1.4
 
 # disable validator Ethereum bridge functionality by default
-ENV ANOMA_LEDGER__ETHEREUM__MODE='Off'
+ENV ANOMA_LEDGER__ETHEREUM_BRIDGE__MODE='Off'
+# ensure Tendermint RPC is exposed from within the container to the outside world
+ENV ANOMA_LEDGER__TENDERMINT__RPC_ADDRESS='0.0.0.0:26657'
 
 COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namada /usr/local/bin
@@ -124,6 +126,13 @@ COPY --from=builder /usr/local/src/namada/target/debug/namadan /usr/local/bin
 WORKDIR /srv
 COPY --from=wasm-builder /usr/local/src/namada/wasm/checksums.py wasm/checksums.py
 COPY --from=wasm-builder /usr/local/src/namada/wasm/*.wasm wasm/
+
+# download MASP params
+RUN mkdir masp && \
+    curl -o masp/masp-spend.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-spend.params?raw=true && \
+    curl -o masp/masp-output.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-output.params?raw=true && \
+    curl -o masp/masp-convert.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-convert.params?raw=true
+ENV ANOMA_MASP_PARAMS_DIR='/srv/masp'
 
 ENV ALIAS="validator-dev"
 RUN namadac utils init-genesis-validator \
