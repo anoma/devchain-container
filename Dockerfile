@@ -1,4 +1,4 @@
-FROM ubuntu:jammy-20220815 AS ubuntu
+FROM ubuntu:jammy-20221101 AS ubuntu
 
 FROM ubuntu AS base
 
