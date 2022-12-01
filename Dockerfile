@@ -23,8 +23,7 @@ USER builder
 
 ENV RUSTFLAGS="-C strip=symbols"
 
-# recommended to use a nightly which has support for CARGO_UNSTABLE_SPARSE_REGISTRY for faster fetches
-ARG RUSTUP_TOOLCHAIN="nightly-2022-09-25"
+ARG RUSTUP_TOOLCHAIN="nightly-2022-11-03"
 ENV RUSTUP_TOOLCHAIN=${RUSTUP_TOOLCHAIN}
 ENV CARGO_UNSTABLE_SPARSE_REGISTRY="true"
 
