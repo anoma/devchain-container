@@ -24,11 +24,6 @@ if [ ! -d ".anoma/$(cat chain-id)" ]; then
     cp wasm/*.wasm ".anoma/$(cat chain-id)/wasm/"
     cp wasm/checksums.json ".anoma/$(cat chain-id)/wasm/"
 
-    # ensure Tendermint RPC is exposed from within the container to the outside world
-    toml set \
-        --toml-path ".anoma/$(cat chain-id)/config.toml" \
-        ledger.tendermint.rpc_address 0.0.0.0:26657
-
     # package up and serve the built .anoma directory for users who want to run a ledger outside of the container
     tar -cvzf "prebuilt.tar.gz" .anoma
 else
