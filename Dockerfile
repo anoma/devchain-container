@@ -136,6 +136,8 @@ ENV ALIAS="validator-dev"
 RUN namadac utils init-genesis-validator \
     --alias $ALIAS \
     --net-address 127.0.0.1:26656 \
+    --commission-rate 0.1 \
+    --max-commission-rate-change 0.1 \
     --unsafe-dont-encrypt
 
 COPY --chmod=0755 add_validator_shard.py /usr/local/bin
