@@ -103,12 +103,11 @@ RUN apt-get update && \
     curl \
     python3 \
     python3-pip \
+    python3-toml \
     sudo && \
     apt-get clean
 
 RUN pip3 install --no-cache-dir \
-    toml==0.10.2 \
-    toml-cli==0.3.1 \
     updog==1.4
 
 # disable validator Ethereum bridge functionality by default
