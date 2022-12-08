@@ -58,4 +58,4 @@ docker run \
 
 Start the Docker container as above, then go to <http://localhost:8123> and download the `prebuilt.tar.gz` archive. Extract it, and there should be a `.anoma` directory inside it. The Docker container can now be stopped.
 
-It should be possible to run `namada` commands from inside whatever directory contains this `.anoma` directory, and the `namada` commands will be configured to use this preconfigured chain. e.g. `namadan ledger run` could start up a validator node for this chain.
+It should be possible to run `namada` commands from inside whatever directory contains this `.namada` directory, and the `namada` commands will be configured to use this preconfigured chain. e.g. `namadan ledger run` could start up a validator node for this chain.

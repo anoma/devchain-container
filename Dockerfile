@@ -44,10 +44,10 @@ RUN rustup toolchain install "$(cat rust-nightly-version)"
 
 RUN cargo fetch
 RUN cargo chef prepare
-ARG ANOMA_BASE_FFLAGS="default"
+ARG NAMADA_BASE_FFLAGS="default"
 RUN cargo chef cook \
     --no-default-features \
-    --features "$ANOMA_BASE_FFLAGS"
+    --features "$NAMADA_BASE_FFLAGS"
 RUN git reset --hard
 
 FROM base AS ref
@@ -60,29 +60,29 @@ RUN rustup toolchain install "$(cat rust-nightly-version)"
 FROM ref as builder
 RUN cargo fetch
 RUN cargo chef prepare
-ARG ANOMA_REF_FFLAGS="default"
+ARG NAMADA_REF_FFLAGS="default"
 RUN cargo chef cook \
     --no-default-features \
-    --features "$ANOMA_REF_FFLAGS"
+    --features "$NAMADA_REF_FFLAGS"
 RUN git reset --hard
 RUN cargo build \
     --no-default-features \
-    --features "$ANOMA_REF_FFLAGS" \
+    --features "$NAMADA_REF_FFLAGS" \
     --package namada_apps \
     --bin namada
 RUN cargo build \
     --no-default-features \
-    --features "$ANOMA_REF_FFLAGS" \
+    --features "$NAMADA_REF_FFLAGS" \
     --package namada_apps \
     --bin namadaw
 RUN cargo build \
     --no-default-features \
-    --features "$ANOMA_REF_FFLAGS" \
+    --features "$NAMADA_REF_FFLAGS" \
     --package namada_apps \
     --bin namadac
 RUN cargo build \
     --no-default-features \
-    --features "$ANOMA_REF_FFLAGS" \
+    --features "$NAMADA_REF_FFLAGS" \
     --package namada_apps \
     --bin namadan
 
@@ -112,9 +112,9 @@ RUN pip3 install --no-cache-dir \
     updog==1.4
 
 # disable validator Ethereum bridge functionality by default
-ENV ANOMA_LEDGER__ETHEREUM_BRIDGE__MODE='Off'
+ENV NAMADA_LEDGER__ETHEREUM_BRIDGE__MODE='Off'
 # ensure Tendermint RPC is exposed from within the container to the outside world
-ENV ANOMA_LEDGER__TENDERMINT__RPC_ADDRESS='0.0.0.0:26657'
+ENV NAMADA_LEDGER__TENDERMINT__RPC_ADDRESS='0.0.0.0:26657'
 
 COPY --from=tendermint-downloader --chmod=500 /tmp/tendermint /usr/local/bin
 COPY --from=builder /usr/local/src/namada/target/debug/namada /usr/local/bin
@@ -131,7 +131,7 @@ RUN mkdir masp && \
     curl -o masp/masp-spend.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-spend.params?raw=true && \
     curl -o masp/masp-output.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-output.params?raw=true && \
     curl -o masp/masp-convert.params -sLO https://github.com/anoma/masp/blob/ef0ef75e81696ff4428db775c654fbec1b39c21f/masp-convert.params?raw=true
-ENV ANOMA_MASP_PARAMS_DIR='/srv/masp'
+ENV NAMADA_MASP_PARAMS_DIR='/srv/masp'
 
 ENV ALIAS="validator-dev"
 RUN namadac utils init-genesis-validator \
@@ -144,12 +144,12 @@ RUN namadac utils init-genesis-validator \
 COPY --chmod=0755 add_validator_shard.py /usr/local/bin
 
 COPY network-config.toml .
-ENV ANOMA_NETWORK_CONFIG_PATH="network-config-processed.toml"
-RUN add_validator_shard.py .anoma/pre-genesis/$ALIAS/validator.toml network-config.toml > $ANOMA_NETWORK_CONFIG_PATH
+ENV NAMADA_NETWORK_CONFIG_PATH="network-config-processed.toml"
+RUN add_validator_shard.py .namada/pre-genesis/$ALIAS/validator.toml network-config.toml > $NAMADA_NETWORK_CONFIG_PATH
 
-ENV ANOMA_CHAIN_PREFIX="dev"
+ENV NAMADA_CHAIN_PREFIX="dev"
 ENV TM_LOG_LEVEL=info
-ENV ANOMA_LOG=info
+ENV NAMADA_LOG=info
 EXPOSE 8123 26656 26657
 COPY init_chain.sh .
 COPY run.sh .
