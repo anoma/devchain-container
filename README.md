@@ -28,10 +28,10 @@ Run `docker compose up` to build and run the ledger Docker container. See `docke
 # REF is the git commit or tag you want to build namada from
 # it must be at least this version or a later commit
 # REF must also be compatible with the `network-config.toml` in this repo (until https://github.com/anoma/anoma/issues/1105 is done, at which point we could use some pre-provided network config template)
-export REF='v0.10.1'
+export REF='v0.11.0'
 
 # BASE_POINT is built before REF, it should preferably share code and crate dependencies with REF, to help with caching
-export BASE_POINT='v0.10.1'
+export BASE_POINT='v0.11.0'
 
 docker build \
     --build-arg BASE_POINT=${BASE_POINT} \
@@ -56,6 +56,6 @@ docker run \
 
 ## Running the ledger natively
 
-Start the Docker container as above, then go to <http://localhost:8123> and download the `prebuilt.tar.gz` archive. Extract it, and there should be a `.anoma` directory inside it. The Docker container can now be stopped.
+Start the Docker container as above, then go to <http://localhost:8123> and download the `prebuilt.tar.gz` archive. Extract it, and there should be a `.namada` directory inside it. The Docker container can now be stopped.
 
-It should be possible to run `namada` commands from inside whatever directory contains this `.anoma` directory, and the `namada` commands will be configured to use this preconfigured chain. e.g. `namadan ledger run` could start up a validator node for this chain.
+It should be possible to run `namada` commands from inside whatever directory contains this `.namada` directory, and the `namada` commands will be configured to use this preconfigured chain. e.g. `namadan ledger run` could start up a validator node for this chain.
