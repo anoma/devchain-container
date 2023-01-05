@@ -35,7 +35,7 @@ RUN git clone --depth=1 https://github.com/anoma/namada.git /usr/local/src/namad
 WORKDIR /usr/local/src/namada
 
 # BASE_POINT should be an ancestor of REF that shares the same toolchain
-ARG BASE_POINT=v0.11.0
+ARG BASE_POINT=v0.12.1
 RUN git fetch --tags
 RUN git fetch --depth=1 origin $BASE_POINT && git checkout $BASE_POINT
 # actual nightly toolchain specified in repo is needed for running rustfmt in build.rs
@@ -51,7 +51,7 @@ RUN cargo chef cook \
 RUN git reset --hard
 
 FROM base AS ref
-ARG REF=v0.11.0
+ARG REF=v0.12.1
 RUN git fetch --depth=1 origin $REF && git checkout $REF
 # actual nightly toolchain specified in repo is needed for running rustfmt in build.rs
 # can be removed once https://github.com/anoma/namada/issues/40 is done

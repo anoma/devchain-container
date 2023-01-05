@@ -28,10 +28,10 @@ Run `docker compose up` to build and run the ledger Docker container. See `docke
 # REF is the git commit or tag you want to build namada from
 # it must be at least this version or a later commit
 # REF must also be compatible with the `network-config.toml` in this repo (until https://github.com/anoma/anoma/issues/1105 is done, at which point we could use some pre-provided network config template)
-export REF='v0.11.0'
+export REF='v0.12.1'
 
 # BASE_POINT is built before REF, it should preferably share code and crate dependencies with REF, to help with caching
-export BASE_POINT='v0.11.0'
+export BASE_POINT='v0.12.1'
 
 docker build \
     --build-arg BASE_POINT=${BASE_POINT} \
