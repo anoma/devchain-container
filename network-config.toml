@@ -49,6 +49,8 @@ epochs_per_year = 31_536_000
 pos_gain_p = 0.1
 # The D gain factor in the Proof of Stake rewards controller
 pos_gain_d = 0.1
+# Max payload size, in bytes, for a tx batch proposal.
+max_proposal_bytes = 22020096
 
 # Proof of stake parameters.
 [pos_params]
