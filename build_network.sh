@@ -26,7 +26,8 @@ package() {
         --max-commission-rate-change 0.1 \
         --unsafe-dont-encrypt
 
-    export DEVCHAIN_CONTAINER_DIR='/opt/workspace/heliax/repos/devchain-container'
+    # get the directory of this script
+    export DEVCHAIN_CONTAINER_DIR="$(dirname $0)"
     export NAMADA_NETWORK_CONFIG_PATH="${CHAIN_DIR}/network-config-processed.toml"
     $DEVCHAIN_CONTAINER_DIR/add_validator_shard.py .namada/pre-genesis/$ALIAS/validator.toml $NETWORK_CONFIG_PATH >$NAMADA_NETWORK_CONFIG_PATH
 
