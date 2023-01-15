@@ -1,14 +1,36 @@
 #!/usr/bin/env bash
-# run in a namada repo, with binaries built, to build a prebuilt archive
-# ensure wasms are already built!
-# for namada v0.11+
+#
+# Script for initializing a Namada chain for local development and joining it. Note that this script trashes any
+# existing `.namada` directory in the directory it is run!
+#
+# ## Prerequisites
+# - bash
+# - Python 3
+# - toml Python pip library <https://pypi.org/project/toml/> (this is the `python3-toml` package on Ubuntu distributions)
+# - trash CLI tool (`brew install trash` on macOS or `sudo apt-get install trash-cli` on Ubuntu)
+#
+# ## How to run
+# This script should be run from the root of a Namada source code repo (<https://github.com/anoma/namada>). *.wasm files
+# must already have been built and be present under the `wasm/` directory of the Namada repo. The only parameter for the
+# shell script is the path to a network config toml compatible with the version of Namada being used. There are some
+# example network configs under `network-configs/` in this repo. Example command:
+#
+# ```shell
+# /path/to/repo/devchain-container/build_network.sh network-configs/mainline-v0.12.1.toml
+# ````
+#
+# Once the script is finished, it should be possible to straight away start running a ledger node e.g. the command
+# assuming binaries have been built is:
+#
+# ```shell
+# target/debug/namadan ledger run
+# ````
 
-# NB: MAKE SURE PYTHON CAN ACCEPT NETWORK CONNECTIONS BEFORE RUNNING THIS SCRIPT!
 set -eoux pipefail
 IFS=$'\n\t'
 
 package() {
-    # TODO: clean up on abort
+    # TODO: also clean up these files if the script is aborted or otherwise exits unsuccessfully
     trash .namada || true
     git checkout --ours -- wasm/checksums.json
     trash nohup.out || true
@@ -61,7 +83,7 @@ package() {
     tar -cvzf "${NAMADA_CHAIN_ID}.prebuilt.tar.gz" .namada
     mv "${NAMADA_CHAIN_ID}.prebuilt.tar.gz" $CHAIN_DIR
 
-    # TODO: clean up on abort
+    # TODO: also clean up these files if the script is aborted or otherwise exits unsuccessfully
     git checkout --ours -- wasm/checksums.json
     trash nohup.out
 
