@@ -31,7 +31,7 @@ IFS=$'\n\t'
 
 package() {
     # TODO: also clean up these files if the script is aborted or otherwise exits unsuccessfully
-    trash .namada || true
+    trash ~/.local/share/namada || true
     git checkout --ours -- wasm/checksums.json
     trash nohup.out || true
 
@@ -51,7 +51,7 @@ package() {
     # get the directory of this script
     export DEVCHAIN_CONTAINER_DIR="$(dirname $0)"
     export NAMADA_NETWORK_CONFIG_PATH="${CHAIN_DIR}/network-config-processed.toml"
-    $DEVCHAIN_CONTAINER_DIR/add_validator_shard.py .namada/pre-genesis/$ALIAS/validator.toml $NETWORK_CONFIG_PATH >$NAMADA_NETWORK_CONFIG_PATH
+    $DEVCHAIN_CONTAINER_DIR/add_validator_shard.py ~/.local/share/namada/pre-genesis/$ALIAS/validator.toml $NETWORK_CONFIG_PATH >$NAMADA_NETWORK_CONFIG_PATH
 
     python3 wasm/checksums.py
 
@@ -65,7 +65,7 @@ package() {
 
     basename *.tar.gz .tar.gz >${CHAIN_DIR}/chain-id
     export NAMADA_CHAIN_ID="$(cat ${CHAIN_DIR}/chain-id)"
-    trash ".namada/${NAMADA_CHAIN_ID}"
+    trash ~/.local/share/namada/${NAMADA_CHAIN_ID}
     mv "${NAMADA_CHAIN_ID}.tar.gz" $CHAIN_DIR
 
     export NAMADA_NETWORK_CONFIGS_SERVER='http://localhost:8123'
@@ -77,10 +77,10 @@ package() {
             --chain-id "${NAMADA_CHAIN_ID}" \
             --dont-prefetch-wasm
 
-    cp wasm/*.wasm ".namada/${NAMADA_CHAIN_ID}/wasm/"
-    cp wasm/checksums.json ".namada/${NAMADA_CHAIN_ID}/wasm/"
+    cp wasm/*.wasm ~/.local/share/namada/${NAMADA_CHAIN_ID}/wasm/
+    cp wasm/checksums.json ~/.local/share/namada/${NAMADA_CHAIN_ID}/wasm/
 
-    tar -cvzf "${NAMADA_CHAIN_ID}.prebuilt.tar.gz" .namada
+    tar -cvzf "${NAMADA_CHAIN_ID}.prebuilt.tar.gz" ~/.local/share/namada
     mv "${NAMADA_CHAIN_ID}.prebuilt.tar.gz" $CHAIN_DIR
 
     # TODO: also clean up these files if the script is aborted or otherwise exits unsuccessfully
